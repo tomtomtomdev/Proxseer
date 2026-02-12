@@ -1,0 +1,5 @@
+mitmproxy>=10.0
+fastapi>=0.104
+uvicorn[standard]>=0.24
+aiosqlite>=0.19
+pydantic>=2.0

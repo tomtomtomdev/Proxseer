@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Proxseer</title>
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <span class="logo">Proxseer</span>
+    <input type="text" id="search-input" placeholder="Filter by URL or host…">
+    <select id="method-filter">
+      <option value="">All Methods</option>
+      <option value="GET">GET</option>
+      <option value="POST">POST</option>
+      <option value="PUT">PUT</option>
+      <option value="PATCH">PATCH</option>
+      <option value="DELETE">DELETE</option>
+      <option value="OPTIONS">OPTIONS</option>
+      <option value="HEAD">HEAD</option>
+    </select>
+    <select id="status-filter">
+      <option value="">All Status</option>
+      <option value="2xx">2xx Success</option>
+      <option value="3xx">3xx Redirect</option>
+      <option value="4xx">4xx Client Error</option>
+      <option value="5xx">5xx Server Error</option>
+    </select>
+    <button id="clear-btn" class="danger">Clear</button>
+    <div class="spacer"></div>
+    <span id="flow-count" class="count">0 requests</span>
+    <div id="conn-dot" class="connection-dot" title="Disconnected"></div>
+  </div>
+
+  <!-- Main layout -->
+  <div class="main">
+    <!-- Left: request list -->
+    <div class="list-panel">
+      <div class="list-header">
+        <span>Status</span>
+        <span>Method</span>
+        <span>URL</span>
+        <span>Type</span>
+        <span style="text-align:right">Time</span>
+      </div>
+      <div class="list-body" id="list-body"></div>
+    </div>
+
+    <!-- Resize handle -->
+    <div class="resize-handle"></div>
+
+    <!-- Right: detail -->
+    <div class="detail-panel" id="detail-panel">
+      <div class="detail-empty">Select a request to view details</div>
+    </div>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
