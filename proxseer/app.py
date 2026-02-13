@@ -6,7 +6,8 @@ from fastapi import FastAPI
 from fastapi.responses import FileResponse, HTMLResponse
 from fastapi.staticfiles import StaticFiles
 
-from .config import STATIC_DIR, PROXY_PORT, WEB_PORT
+from .config import STATIC_DIR
+from . import config as _config
 from .database import init_db
 from .routes.api import router as api_router
 from .routes.websocket import websocket_endpoint
@@ -99,22 +100,22 @@ def create_app() -> FastAPI:
   <div class="info-box">
     <strong>Your Network Info</strong><br>
     Mac IP: <code>{ip}</code><br>
-    Proxy Port: <code>{PROXY_PORT}</code><br>
-    Web UI: <code>http://{ip}:{WEB_PORT}</code>
+    Proxy Port: <code>{_config.PROXY_PORT}</code><br>
+    Web UI: <code>http://{ip}:{_config.WEB_PORT}</code>
   </div>
 
   <div class="step">
     <span class="step-num">1</span>
     <h3>Configure WiFi Proxy</h3>
     <p>On your iPhone: <strong>Settings → Wi-Fi → tap your network → Configure Proxy → Manual</strong></p>
-    <p>Server: <code>{ip}</code> &nbsp; Port: <code>{PROXY_PORT}</code></p>
+    <p>Server: <code>{ip}</code> &nbsp; Port: <code>{_config.PROXY_PORT}</code></p>
   </div>
 
   <div class="step">
     <span class="step-num">2</span>
     <h3>Install CA Certificate</h3>
     <p>On your iPhone's Safari, visit:<br>
-    <code>http://{ip}:{WEB_PORT}/cert</code></p>
+    <code>http://{ip}:{_config.WEB_PORT}/cert</code></p>
     <p>Tap "Allow" when prompted to download the profile.</p>
   </div>
 

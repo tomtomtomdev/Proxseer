@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from mitmproxy import options, http
 from mitmproxy.tools.dump import DumpMaster
 
-from .config import PROXY_PORT, MAX_BODY_SIZE, BINARY_CONTENT_TYPES
+from .config import MAX_BODY_SIZE, BINARY_CONTENT_TYPES
 
 logger = logging.getLogger("proxseer.proxy")
 
@@ -74,19 +74,19 @@ class TrafficCapture:
             logger.exception("Error capturing flow")
 
 
-def run_proxy(queue: asyncio.Queue, loop: asyncio.AbstractEventLoop, shutdown_event: threading.Event):
+def run_proxy(queue: asyncio.Queue, loop: asyncio.AbstractEventLoop, shutdown_event: threading.Event, proxy_port: int):
     """Run mitmproxy in a dedicated thread with its own event loop."""
 
     async def _run():
         opts = options.Options(
             listen_host="0.0.0.0",
-            listen_port=PROXY_PORT,
+            listen_port=proxy_port,
             ssl_insecure=True,
         )
         master = DumpMaster(opts, with_dumper=False, with_termlog=False)
         master.addons.add(TrafficCapture(queue, loop))
 
-        logger.info(f"Proxy listening on 0.0.0.0:{PROXY_PORT}")
+        logger.info(f"Proxy listening on 0.0.0.0:{proxy_port}")
 
         try:
             await master.run()

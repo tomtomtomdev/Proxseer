@@ -65,26 +65,9 @@ if [[ ! -x "$VENV_DIR/bin/mitmdump" ]]; then
     echo "⚠  mitmdump binary not found in venv. mitmproxy may not work correctly."
 fi
 
-# Detect local IP
-LOCAL_IP=$(ipconfig getifaddr en0 2>/dev/null || echo "127.0.0.1")
-
 echo ""
-echo "╔══════════════════════════════════════════╗"
-echo "║            Ready to Launch!              ║"
-echo "╠══════════════════════════════════════════╣"
-echo "║                                          ║"
-echo "║  Web UI:  http://$LOCAL_IP:9000          "
-echo "║  Proxy:   $LOCAL_IP:8080                 "
-echo "║  Setup:   http://$LOCAL_IP:9000/setup    "
-echo "║                                          ║"
-echo "║  iPhone WiFi Proxy Settings:             ║"
-echo "║    Server: $LOCAL_IP                     "
-echo "║    Port:   8080                          ║"
-echo "║                                          ║"
-echo "╚══════════════════════════════════════════╝"
-echo ""
-echo "Starting Proxseer..."
-echo "(Press Ctrl+C to stop)"
+echo "✓ All set! Starting Proxseer..."
+echo "  (Ports and URLs will be shown by the application)"
 echo ""
 
 exec "$VENV_DIR/bin/python" -m proxseer

@@ -6,7 +6,8 @@ import threading
 import uvicorn
 
 from .app import create_app, get_local_ip
-from .config import PROXY_PORT, WEB_PORT
+from . import config as config_module
+from .config import find_available_port
 from .database import insert_flow
 from .proxy import run_proxy
 from .routes.websocket import manager
@@ -40,21 +41,44 @@ async def flow_consumer(queue: asyncio.Queue, shutdown_event: threading.Event):
 def main():
     ip = get_local_ip()
 
+    # Resolve available ports (auto-increment if occupied)
+    proxy_port = find_available_port(config_module.PROXY_PORT)
+    web_port = find_available_port(config_module.WEB_PORT)
+
+    # Guard against collision (e.g. proxy default 8080 bumped to 9000)
+    if proxy_port == web_port:
+        web_port = find_available_port(web_port + 1)
+
+    # Publish resolved ports so app.py reads them at request time
+    default_proxy = config_module.PROXY_PORT
+    default_web = config_module.WEB_PORT
+    config_module.PROXY_PORT = proxy_port
+    config_module.WEB_PORT = web_port
+
     print(f"""
 ╔══════════════════════════════════════════════╗
 ║              Proxseer Started                ║
 ╠══════════════════════════════════════════════╣
 ║                                              ║
-║  Web UI:   http://{ip}:{WEB_PORT:<5}              ║
-║  Proxy:    {ip}:{PROXY_PORT}                     ║
-║  Setup:    http://{ip}:{WEB_PORT}/setup           ║
+║  Web UI:   http://{ip}:{web_port:<5}              ║
+║  Proxy:    {ip}:{proxy_port}                     ║
+║  Setup:    http://{ip}:{web_port}/setup           ║
 ║                                              ║
 ║  Configure iPhone WiFi proxy to:             ║
 ║    Server: {ip}                              ║
-║    Port:   {PROXY_PORT}                            ║
+║    Port:   {proxy_port}                            ║
 ║                                              ║
 ╚══════════════════════════════════════════════╝
 """)
+
+    if proxy_port != default_proxy:
+        logger.info(
+            f"Port {default_proxy} in use – proxy listening on {proxy_port} instead"
+        )
+    if web_port != default_web:
+        logger.info(
+            f"Port {default_web} in use – web UI listening on {web_port} instead"
+        )
 
     queue = asyncio.Queue()
     shutdown_event = threading.Event()
@@ -63,7 +87,7 @@ def main():
 
     proxy_thread = threading.Thread(
         target=run_proxy,
-        args=(queue, loop, shutdown_event),
+        args=(queue, loop, shutdown_event, proxy_port),
         daemon=True,
         name="mitmproxy",
     )
@@ -77,7 +101,7 @@ def main():
     config = uvicorn.Config(
         app,
         host="0.0.0.0",
-        port=WEB_PORT,
+        port=web_port,
         log_level="warning",
         loop="asyncio",
     )

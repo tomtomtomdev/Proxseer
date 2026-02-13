@@ -1,4 +1,5 @@
 import os
+import socket
 from pathlib import Path
 
 PROXY_PORT = int(os.environ.get("PROXSEER_PROXY_PORT", 8080))
@@ -16,3 +17,19 @@ BINARY_CONTENT_TYPES = (
 )
 
 STATIC_DIR = Path(__file__).parent / "static"
+
+
+def find_available_port(preferred: int, max_attempts: int = 50) -> int:
+    """Return *preferred* if it is free, otherwise try successive ports."""
+    for offset in range(max_attempts):
+        port = preferred + offset
+        try:
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(("0.0.0.0", port))
+                return port
+        except OSError:
+            continue
+    raise RuntimeError(
+        f"Could not find an available port in range "
+        f"{preferred}–{preferred + max_attempts - 1}"
+    )
