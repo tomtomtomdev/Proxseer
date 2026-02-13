@@ -82,9 +82,9 @@ def run_proxy(queue: asyncio.Queue, loop: asyncio.AbstractEventLoop, shutdown_ev
             listen_host="0.0.0.0",
             listen_port=proxy_port,
             ssl_insecure=True,
-            anticomp=True,
         )
         master = DumpMaster(opts, with_dumper=False, with_termlog=False)
+        master.options.anticomp = True
         master.addons.add(TrafficCapture(queue, loop))
 
         logger.info(f"Proxy listening on 0.0.0.0:{proxy_port}")
