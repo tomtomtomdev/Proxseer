@@ -61,10 +61,10 @@ class TrafficCapture:
                 "request_headers": dict(req.headers),
                 "response_headers": dict(resp.headers) if resp else {},
                 "request_body": _safe_decode(req.raw_content, req_ct),
-                "response_body": _safe_decode(resp.raw_content, resp_ct) if resp else None,
+                "response_body": _safe_decode(resp.content, resp_ct) if resp else None,
                 "content_type": resp_ct.split(";")[0].strip() if resp_ct else None,
                 "request_size": len(req.raw_content) if req.raw_content else 0,
-                "response_size": len(resp.raw_content) if resp and resp.raw_content else 0,
+                "response_size": len(resp.content) if resp and resp.content else 0,
                 "duration_ms": duration_ms,
                 "timestamp": datetime.now(timezone.utc).isoformat(),
             }
@@ -82,6 +82,7 @@ def run_proxy(queue: asyncio.Queue, loop: asyncio.AbstractEventLoop, shutdown_ev
             listen_host="0.0.0.0",
             listen_port=proxy_port,
             ssl_insecure=True,
+            anticomp=True,
         )
         master = DumpMaster(opts, with_dumper=False, with_termlog=False)
         master.addons.add(TrafficCapture(queue, loop))
