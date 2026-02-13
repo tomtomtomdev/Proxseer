@@ -154,6 +154,7 @@
           <span>Duration: ${duration}</span>
           <span>Size: ${size}</span>
           <span>Type: ${escapeHtml(flow.content_type || "—")}</span>
+          <button class="curl-btn">Copy cURL</button>
         </div>
       </div>
       <div class="tabs">
@@ -164,6 +165,15 @@
       </div>
       <div class="tab-content" id="tab-content"></div>
     `;
+
+    $detail.querySelector(".curl-btn").addEventListener("click", () => {
+      const curl = buildCurl(flow);
+      const btn = $detail.querySelector(".curl-btn");
+      navigator.clipboard.writeText(curl).then(() => {
+        btn.textContent = "Copied!";
+        setTimeout(() => (btn.textContent = "Copy cURL"), 1500);
+      });
+    });
 
     $detail.querySelectorAll(".tab").forEach((tab) => {
       tab.addEventListener("click", () => {
@@ -273,6 +283,30 @@
       /:\s*(null)/g,
       ': <span class="json-null">$1</span>'
     );
+  }
+
+  // ── cURL builder ──
+
+  function buildCurl(flow) {
+    const escape = (s) => s.replace(/'/g, "'\\''");
+    const parts = [`curl '${escape(flow.url)}'`];
+
+    if (flow.method !== "GET") {
+      parts.push(`  -X ${flow.method}`);
+    }
+
+    const skipHeaders = new Set(["host", "content-length"]);
+    const headers = flow.request_headers || {};
+    for (const [k, v] of Object.entries(headers)) {
+      if (skipHeaders.has(k.toLowerCase()) || k.startsWith(":")) continue;
+      parts.push(`  -H '${escape(k)}: ${escape(String(v))}'`);
+    }
+
+    if (flow.request_body && !flow.request_body.startsWith("[binary content:") && !flow.request_body.startsWith("[truncated:")) {
+      parts.push(`  --data-raw '${escape(flow.request_body)}'`);
+    }
+
+    return parts.join(" \\\n");
   }
 
   // ── Utilities ──

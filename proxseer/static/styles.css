@@ -236,11 +236,25 @@ body {
 
 .detail-header .detail-meta {
   display: flex;
+  align-items: center;
   gap: 1rem;
   margin-top: 0.35rem;
   font-size: 0.8rem;
   color: var(--text-muted);
 }
+
+.detail-meta .curl-btn {
+  margin-left: auto;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  padding: 0.25rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.detail-meta .curl-btn:hover { color: var(--accent); border-color: var(--accent); }
 
 .tabs {
   display: flex;
