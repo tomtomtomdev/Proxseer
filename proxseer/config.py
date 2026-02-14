@@ -10,6 +10,23 @@ DB_PATH = DATA_DIR / "proxseer.db"
 
 MAX_BODY_SIZE = 1 * 1024 * 1024  # 1 MB
 
+# Domains using certificate pinning – mitmproxy will pass these through
+# without intercepting TLS.  Override with a comma-separated list of regex
+# patterns via PROXSEER_IGNORE_HOSTS.
+_DEFAULT_IGNORE_HOSTS = [
+    r".*\.linkedin\.com",
+    r".*\.apple\.com",
+    r".*\.icloud\.com",
+    r".*\.mzstatic\.com",
+]
+
+_env_ignore = os.environ.get("PROXSEER_IGNORE_HOSTS", "")
+IGNORE_HOSTS = (
+    [p.strip() for p in _env_ignore.split(",") if p.strip()]
+    if _env_ignore
+    else _DEFAULT_IGNORE_HOSTS
+)
+
 BINARY_CONTENT_TYPES = (
     "image/", "video/", "audio/", "application/octet-stream",
     "application/zip", "application/gzip", "application/pdf",

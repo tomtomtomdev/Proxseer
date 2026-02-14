@@ -6,7 +6,7 @@ from datetime import datetime, timezone
 from mitmproxy import options, http
 from mitmproxy.tools.dump import DumpMaster
 
-from .config import MAX_BODY_SIZE, BINARY_CONTENT_TYPES
+from .config import MAX_BODY_SIZE, BINARY_CONTENT_TYPES, IGNORE_HOSTS
 
 logger = logging.getLogger("proxseer.proxy")
 
@@ -82,6 +82,7 @@ def run_proxy(queue: asyncio.Queue, loop: asyncio.AbstractEventLoop, shutdown_ev
             listen_host="0.0.0.0",
             listen_port=proxy_port,
             ssl_insecure=True,
+            ignore_hosts=IGNORE_HOSTS,
         )
         master = DumpMaster(opts, with_dumper=False, with_termlog=False)
         master.options.anticomp = True
