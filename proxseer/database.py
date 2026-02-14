@@ -150,6 +150,43 @@ async def clear_flows():
         await db.commit()
 
 
+async def get_flows_for_export(
+    host: str | None = None,
+    method: str | None = None,
+    search: str | None = None,
+) -> list[dict]:
+    conditions = []
+    params = []
+
+    if host:
+        conditions.append("host LIKE ?")
+        params.append(f"%{host}%")
+    if method:
+        conditions.append("method = ?")
+        params.append(method.upper())
+    if search:
+        conditions.append("(url LIKE ? OR host LIKE ?)")
+        params.extend([f"%{search}%", f"%{search}%"])
+
+    where = f"WHERE {' AND '.join(conditions)}" if conditions else ""
+
+    async with aiosqlite.connect(DB_PATH) as db:
+        rows = await db.execute_fetchall(
+            f"""SELECT method, url, host, path,
+                       request_headers, request_body
+                FROM requests {where}
+                ORDER BY id ASC""",
+            params,
+        )
+        return [
+            {
+                "method": r[0], "url": r[1], "host": r[2], "path": r[3],
+                "request_headers": json.loads(r[4]), "request_body": r[5],
+            }
+            for r in rows
+        ]
+
+
 async def get_stats() -> dict:
     async with aiosqlite.connect(DB_PATH) as db:
         total_row = await db.execute_fetchall("SELECT COUNT(*) FROM requests")

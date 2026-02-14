@@ -15,6 +15,7 @@
   const $methodFilter = document.getElementById("method-filter");
   const $statusFilter = document.getElementById("status-filter");
   const $clearBtn = document.getElementById("clear-btn");
+  const $exportBtn = document.getElementById("export-postman-btn");
   const $connDot = document.getElementById("conn-dot");
   const $count = document.getElementById("flow-count");
 
@@ -358,6 +359,28 @@
       updateCount();
     } catch (err) {
       console.error("Failed to clear:", err);
+    }
+  });
+
+  // ── Export Postman ──
+
+  $exportBtn.addEventListener("click", async () => {
+    const params = new URLSearchParams();
+    if (filters.method) params.set("method", filters.method);
+    if (filters.search) params.set("search", filters.search);
+
+    const url = `/api/export/postman${params.toString() ? "?" + params : ""}`;
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error("Export failed");
+      const blob = await resp.blob();
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "proxseer_collection.json";
+      a.click();
+      URL.revokeObjectURL(a.href);
+    } catch (err) {
+      console.error("Export failed:", err);
     }
   });
 
