@@ -2,13 +2,50 @@ import asyncio
 import logging
 import threading
 from datetime import datetime, timezone
+from pathlib import Path
 
 from mitmproxy import options, http
 from mitmproxy.tools.dump import DumpMaster
+from mitmproxy import certs as mitm_certs
 
 from .config import MAX_BODY_SIZE, BINARY_CONTENT_TYPES, IGNORE_HOSTS
 
 logger = logging.getLogger("proxseer.proxy")
+
+CA_NAME = "Proxseer"
+MITM_CONFDIR = Path.home() / ".mitmproxy"
+MITM_CA_FILE = MITM_CONFDIR / "mitmproxy-ca.pem"
+
+
+def _ensure_proxseer_ca() -> None:
+    """Ensure mitmproxy's CA cert is branded as 'Proxseer' so iOS shows that
+    name on the installed profile.  If an existing CA has a different CN
+    (e.g. the default 'mitmproxy'), it is backed up and regenerated."""
+    if MITM_CA_FILE.exists():
+        try:
+            certs_in_file = mitm_certs.x509.load_pem_x509_certificates(
+                MITM_CA_FILE.read_bytes()
+            )
+            cn = mitm_certs.Cert(certs_in_file[0]).cn
+            if cn == CA_NAME:
+                return
+            logger.info(f"Replacing existing CA (CN={cn!r}) with {CA_NAME!r}")
+            for f in MITM_CONFDIR.glob("mitmproxy-ca*"):
+                f.rename(f.with_suffix(f.suffix + ".bak"))
+            for f in MITM_CONFDIR.glob("mitmproxy-dhparam*"):
+                f.rename(f.with_suffix(f.suffix + ".bak"))
+        except Exception:
+            logger.exception("Failed to inspect existing CA; regenerating")
+
+    MITM_CONFDIR.mkdir(parents=True, exist_ok=True)
+    mitm_certs.CertStore.create_store(
+        MITM_CONFDIR,
+        basename="mitmproxy",
+        key_size=2048,
+        organization=CA_NAME,
+        cn=CA_NAME,
+    )
+    logger.info(f"Generated CA with CN={CA_NAME!r} at {MITM_CA_FILE}")
 
 
 def _is_binary(content_type: str | None) -> bool:
@@ -76,6 +113,8 @@ class TrafficCapture:
 
 def run_proxy(queue: asyncio.Queue, loop: asyncio.AbstractEventLoop, shutdown_event: threading.Event, proxy_port: int):
     """Run mitmproxy in a dedicated thread with its own event loop."""
+
+    _ensure_proxseer_ca()
 
     async def _run():
         opts = options.Options(

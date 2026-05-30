@@ -123,14 +123,14 @@ def create_app() -> FastAPI:
     <span class="step-num">3</span>
     <h3>Install the Profile</h3>
     <p><strong>Settings → General → VPN & Device Management</strong><br>
-    Tap the mitmproxy profile → Install → enter passcode → Install.</p>
+    Tap the Proxseer profile → Install → enter passcode → Install.</p>
   </div>
 
   <div class="step">
     <span class="step-num">4</span>
     <h3>Enable Full Trust</h3>
     <p><strong>Settings → General → About → Certificate Trust Settings</strong><br>
-    Toggle ON for mitmproxy → Continue.</p>
+    Toggle ON for Proxseer → Continue.</p>
   </div>
 
   <div class="step">
